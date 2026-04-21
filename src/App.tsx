@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Card } from "./types/card";
 import data from "./data/commanders";
+import SearchInput from "./components/SearchInput";
 
 type Feedback = {
   name: boolean;
@@ -40,6 +41,15 @@ export default function App() {
   const [guesses, setGuesses] = useState<
     { card: Card; feedback: Feedback }[]
   >([]);
+
+  function handleSelect(card: Card) {
+    if (!target) return;
+
+    const feedback = compareCards(card, target);
+
+    setGuesses([{ card, feedback }, ...guesses]);
+    setGuessInput("");
+  }
 
   useEffect(() => {
     const random = data[Math.floor(Math.random() * data.length)];
@@ -84,20 +94,12 @@ export default function App() {
       <h1 className="text-2xl font-bold mb-6">Guess the Commander</h1>
 
       {/* INPUT */}
-      <div className="mb-6">
-        <input
-          className="p-2 text-white w-64"
-          value={guessInput}
-          onChange={(e) => setGuessInput(e.target.value)}
-          placeholder="Enter commander..."
-        />
-        <button
-          onClick={handleGuess}
-          className="ml-2 px-4 py-2 bg-blue-600"
-        >
-          Guess
-        </button>
-      </div>
+      <SearchInput
+        data={data}
+        value={guessInput}
+        onChange={setGuessInput}
+        onSelect={handleSelect}
+      />
 
       {/* TABLE HEADER */}
       <div className="grid grid-cols-4 gap-2 font-bold mb-2">
