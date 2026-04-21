@@ -1,12 +1,6 @@
 import { useEffect, useState } from "react";
-import data from "./data/commanders.json";
-
-type Card = {
-  name: string;
-  colors: string[];
-  manaValue: number;
-  types: string[];
-};
+import type { Card } from "./types/card";
+import data from "./data/commanders";
 
 type Feedback = {
   name: boolean;
