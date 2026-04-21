@@ -61,6 +61,10 @@ export default function App() {
       setGameStatus("lost");
     }
 
+    if (guesses.some((g) => g.card.name === card.name)) {
+      return;
+    }
+
     setGuessInput("");
   }
 
@@ -131,6 +135,7 @@ export default function App() {
         onChange={setGuessInput}
         onSelect={handleSelect}
         disabled={gameStatus !== "playing"}
+        guessed={guesses.map((g) => g.card.name)}
       />
 
       {/* WON/LOST/AGAIN */}

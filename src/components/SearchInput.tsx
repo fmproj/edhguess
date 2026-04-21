@@ -7,6 +7,7 @@ type Props = {
   onChange: (value: string) => void;
   onSelect: (card: Card) => void;
   disabled?: boolean;
+  guessed: string[];
 };
 
 export default function SearchInput({
@@ -15,14 +16,16 @@ export default function SearchInput({
   onChange,
   onSelect,
   disabled,
+  guessed,
 }: Props) {
   const [highlightIndex, setHighlightIndex] = useState(0);
 
+  const guessedSet = new Set(guessed.map((g) => g.toLowerCase()));
   const filtered = data
     .filter((card) =>
       card.name.toLowerCase().includes(value.toLowerCase())
     )
-    .slice(0, 5);
+    .filter((card) => !guessedSet.has(card.name.toLowerCase()));
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "ArrowDown") {
