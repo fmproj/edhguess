@@ -6,6 +6,7 @@ type Props = {
   value: string;
   onChange: (value: string) => void;
   onSelect: (card: Card) => void;
+  disabled?: boolean;
 };
 
 export default function SearchInput({
@@ -13,6 +14,7 @@ export default function SearchInput({
   value,
   onChange,
   onSelect,
+  disabled,
 }: Props) {
   const [highlightIndex, setHighlightIndex] = useState(0);
 
@@ -72,6 +74,7 @@ export default function SearchInput({
         }}
         onKeyDown={handleKeyDown}
         placeholder="Enter commander..."
+        disabled={disabled}
       />
 
       {value && filtered.length > 0 && (

@@ -3,6 +3,8 @@ import type { Card } from "./types/card";
 import data from "./data/commanders";
 import SearchInput from "./components/SearchInput";
 
+const MAX_GUESSES = 7;
+
 type Feedback = {
   name: boolean;
   colors: "correct" | "partial" | "wrong";
@@ -36,6 +38,7 @@ function compareCards(guess: Card, target: Card): Feedback {
 }
 
 export default function App() {
+  const [gameStatus, setGameStatus] = useState<"playing" | "won" | "lost">("playing");
   const [target, setTarget] = useState<Card | null>(null);
   const [guessInput, setGuessInput] = useState("");
   const [guesses, setGuesses] = useState<
@@ -43,11 +46,21 @@ export default function App() {
   >([]);
 
   function handleSelect(card: Card) {
-    if (!target) return;
+    if (!target || gameStatus !== "playing") return;
 
     const feedback = compareCards(card, target);
 
-    setGuesses([{ card, feedback }, ...guesses]);
+    const newGuesses = [{ card, feedback }, ...guesses];
+    setGuesses(newGuesses);
+
+    if (card.name === target.name) {
+      setGameStatus("won");
+    }
+
+    if (newGuesses.length >= MAX_GUESSES && card.name !== target.name) {
+      setGameStatus("lost");
+    }
+
     setGuessInput("");
   }
 
@@ -72,6 +85,14 @@ export default function App() {
     setGuessInput("");
   }
 
+  function resetGame() {
+    const random = data[Math.floor(Math.random() * data.length)];
+    setTarget(random);
+    setGuesses([]);
+    setGuessInput("");
+    setGameStatus("playing");
+  }
+
   function getColorClass(state: string) {
     if (state === "correct") return "bg-green-500";
     if (state === "partial") return "bg-yellow-500";
@@ -92,6 +113,16 @@ export default function App() {
   return (
     <div className="min-h-screen bg-zinc-900 text-white p-6">
       <h1 className="text-2xl font-bold mb-6">Guess the Commander</h1>
+      {/* GUESS COUNTER */}
+      <div className="mb-4 text-sm text-gray-300">
+          Guesses: {guesses.length} / {MAX_GUESSES}
+      </div>
+      <div className="w-64 h-2 bg-gray-700 mb-4">
+        <div
+          className="h-2 bg-blue-500"
+          style={{ width: `${(guesses.length / MAX_GUESSES) * 100}%` }}
+        />
+      </div>
 
       {/* INPUT */}
       <SearchInput
@@ -99,7 +130,30 @@ export default function App() {
         value={guessInput}
         onChange={setGuessInput}
         onSelect={handleSelect}
+        disabled={gameStatus !== "playing"}
       />
+
+      {/* WON/LOST/AGAIN */}
+      {gameStatus === "won" && (
+        <div className="mb-4 text-green-400 font-bold">
+          You guessed correctly!
+        </div>
+      )}
+
+      {gameStatus === "lost" && target && (
+        <div className="mb-4 text-red-400 font-bold">
+          You lost! The correct answer was: {target.name}
+        </div>
+      )}
+
+      {gameStatus !== "playing" && (
+        <button
+          onClick={resetGame}
+          className="mb-4 px-4 py-2 bg-purple-600 text-white"
+        >
+          Play Again
+        </button>
+      )}
 
       {/* TABLE HEADER */}
       <div className="grid grid-cols-4 gap-2 font-bold mb-2">
