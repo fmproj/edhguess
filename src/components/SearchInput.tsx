@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import type { Card } from "../types/card";
 
 type Props = {
@@ -20,12 +20,33 @@ export default function SearchInput({
 }: Props) {
   const [highlightIndex, setHighlightIndex] = useState(0);
 
+  // refs for scrolling
+  const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
+
   const guessedSet = new Set(guessed.map((g) => g.toLowerCase()));
+
   const filtered = data
     .filter((card) =>
       card.name.toLowerCase().includes(value.toLowerCase())
     )
     .filter((card) => !guessedSet.has(card.name.toLowerCase()));
+
+  // scroll highlighted item into view
+  useEffect(() => {
+    const el = itemRefs.current[highlightIndex];
+    if (el) {
+      el.scrollIntoView({
+        block: "nearest",
+      });
+    }
+  }, [highlightIndex]);
+
+  // prevent index going out of bounds when filtering changes
+  useEffect(() => {
+    if (highlightIndex >= filtered.length) {
+      setHighlightIndex(0);
+    }
+  }, [filtered.length, highlightIndex]);
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "ArrowDown") {
@@ -41,6 +62,9 @@ export default function SearchInput({
     }
 
     if (e.key === "Enter") {
+      // ❗ prevent Enter when input is empty
+      if (!value.trim()) return;
+
       e.preventDefault();
 
       // Case 1: dropdown selection
@@ -85,6 +109,7 @@ export default function SearchInput({
           {filtered.map((card, index) => (
             <div
               key={card.name}
+              ref={(el) => (itemRefs.current[index] = el)}
               onClick={() => onSelect(card)}
               className={`p-2 cursor-pointer ${
                 index === highlightIndex
